@@ -12,3 +12,8 @@ During the work on the project I want to achieve the following goals:
 
 Also I want examine new interesting libraries and approaches for graph analysis, processing and visualization. 
 
+# 28.04.2021
+
+So, today second day of my work on this project. I should have read more articles, but I just read some from top of google result. But since I need do some tasks today, I start do 2nd part of plan.
+
+And I find some asynchronous library called **aiovk** - I think it can be better solution because it still some update and do all non-linear. 

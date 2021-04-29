@@ -57,9 +57,9 @@ We will start with:
  
  
  // todo
+ 
  Real profile identification.
  Criteria of a fake profile (friends count? pictures? wall posts?).
  analyze gifts.
  find mutual likes to detect real friends.
- 
- 
+ How we can analyze data in functional way (F#?)

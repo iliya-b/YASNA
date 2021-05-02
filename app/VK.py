@@ -24,3 +24,22 @@ class VK:
         if response_get_user and 'items' in response_get_friends:
             return response_get_user + response_get_friends['items']
         return response_get_friends
+        
+    def get_data_about_user_and_all_friends_recursively(self, user_id, number):
+        friends = {user_id}
+
+        previous_friends = {user_id}
+        current_friends = set()
+        for i in range(number):
+            for friend in previous_friends:
+                try:
+                    current_friends.update(self.api.friends.get(user_id=friend)['items'])
+                except:
+                    print(friend)
+            friends.update(current_friends)
+            previous_friends = current_friends
+            current_friends = set()
+        
+        batch_size = 100
+        for batch in [friends[i:i+batch_size] for i in range(0, len(friends))]:
+            self.api.get.users(user_ids=batch)

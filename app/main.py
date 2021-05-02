@@ -1,13 +1,14 @@
 import yaml
 from VK import VK
+import networkx as nx
+import matplotlib.pyplot as plt
 
 def main():
     credentials = yaml.safe_load(open('credentials.yml').read())
     login, password = credentials['login'], credentials['password']
     vk_session = VK(login, password)
 
-    data = vk_session.get_data_about_user_and_all_friends_recursively('444597545', 1)
-    print(data)
-
+    G = vk_session.get_graph_of_users_and_his_friends('444597545', 1)
+    print(G.nodes(data=True))
 if __name__ == '__main__':
     main()

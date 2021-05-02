@@ -1,4 +1,5 @@
 import vk_api
+import networkx as nx
 
 class VK:
     def __init__(self, login, password):
@@ -17,34 +18,25 @@ class VK:
         session = vk_api.VkApi(login, password)
         session.auth(token_only=True)
         return session
-
-    def get_data_about_user_and_all_friends(self, user_id):
-        response_get_user = self.api.users.get(user_ids=user_id, fields=self.major_fields)
-        response_get_friends = self.api.friends.get(user_id=user_id, fields=self.major_fields)
-        if response_get_user and 'items' in response_get_friends:
-            return response_get_user + response_get_friends['items']
-        return response_get_friends
         
-    def get_data_about_user_and_all_friends_recursively(self, user_id, number):
-        friends = {user_id}
-
+    def get_graph_of_users_and_his_friends(self, user_id, number):
+        friends = nx.Graph()
         previous_friends = {user_id}
         current_friends = set()
         for i in range(number):
             for friend in previous_friends:
                 try:
                     new_friends = self.api.friends.get(user_id=friend)['items']
-                    new_friends = [i for i in new_friends if i not in friends]
                     current_friends.update(new_friends)
+                    friends.add_edges_from([(friend, i) for i in new_friends])
                 except:
                     print(friend)
-            friends.update(current_friends)
             previous_friends = current_friends
             current_friends = set()
-        friends = list(friends)
 
-        data = []
         batch_size = 256
-        for batch in [friends[i:i+batch_size] for i in range(0, len(friends), batch_size)]:
-            data.extend(self.api.users.get(user_ids=batch, fields=self.major_fields))
-        return data
+        friends_nodes = list(friends)
+        for batch in [friends_nodes[i:i+batch_size] for i in range(0, len(friends_nodes), batch_size)]:
+            data = self.api.users.get(user_ids=batch, fields=self.major_fields)
+            nx.set_node_attributes(friends, {k:v for k, v in zip(batch, data)})
+        return friends

@@ -33,13 +33,18 @@ class VK:
         for i in range(number):
             for friend in previous_friends:
                 try:
-                    current_friends.update(self.api.friends.get(user_id=friend)['items'])
+                    new_friends = self.api.friends.get(user_id=friend)['items']
+                    new_friends = [i for i in new_friends if i not in friends]
+                    current_friends.update(new_friends)
                 except:
                     print(friend)
             friends.update(current_friends)
             previous_friends = current_friends
             current_friends = set()
-        
-        batch_size = 100
-        for batch in [friends[i:i+batch_size] for i in range(0, len(friends))]:
-            self.api.get.users(user_ids=batch)
+        friends = list(friends)
+
+        data = []
+        batch_size = 256
+        for batch in [friends[i:i+batch_size] for i in range(0, len(friends), batch_size)]:
+            data.extend(self.api.users.get(user_ids=batch, fields=self.major_fields))
+        return data

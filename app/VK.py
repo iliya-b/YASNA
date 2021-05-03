@@ -2,9 +2,8 @@ import vk_api
 import networkx as nx
 
 class VK:
-    def __init__(self, login, password):
-        self.session = self.auth(login, password)
-        self.tools = vk_api.VkTools(self.session)
+    def __init__(self, credentials):
+        self.session = self.auth(credentials)
         self.api = self.session.get_api()
         self.major_fields = ['uid' ,'first_name', 'last_name', 'deactivated',\
             'sex', 'bdate', 'city', 'country', 'home_town', 'domain', 'contacts',\
@@ -14,9 +13,15 @@ class VK:
             'interests', 'music', 'movies', 'tv', 'books', 'games', 'about', 'quotes',\
             'timezone', 'screen_name']
 
-    def auth(self, login, password):
-        session = vk_api.VkApi(login, password)
-        session.auth(token_only=True)
+    def auth(self, credentials):
+        if 'login' in credentials:
+            session = vk_api.VkApi(credentials['login'], credentials['password'])
+            session.auth(token_only=True)
+        elif 'client_secret' in credentials:
+            session = vk_api.VkApi(app_id=credentials['app_id'], client_secret=credentials['client_secret'])
+            session.auth(token_only=True)
+        elif 'token' in credentials:
+            session = vk_api.VkApi(token=credentials['token'])
         return session
         
     def get_graph_of_users_and_his_friends(self, user_id, number=1):

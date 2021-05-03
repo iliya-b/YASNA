@@ -1,0 +1,5 @@
+.idea
+credentials*
+.vs*
+*__pycache__*
+vk_config*

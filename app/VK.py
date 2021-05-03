@@ -19,7 +19,7 @@ class VK:
         session.auth(token_only=True)
         return session
         
-    def get_graph_of_users_and_his_friends(self, user_id, number):
+    def get_graph_of_users_and_his_friends(self, user_id, number=1):
         friends = nx.Graph()
         previous_friends = {user_id}
         current_friends = set()
@@ -40,3 +40,30 @@ class VK:
             data = self.api.users.get(user_ids=batch, fields=self.major_fields)
             nx.set_node_attributes(friends, {k:v for k, v in zip(batch, data)})
         return friends
+
+    def get_graph_of_users_and_his_friends_pool(self, user_id, number=1):
+        friends = nx.Graph()
+        previous_friends = {user_id}
+        current_friends = set()
+        for i in range(number):
+            new_friends, errors = vk_api.vk_request_one_param_pool(
+                self.session,
+                'friends.get', 
+                key='user_id',
+                values=list(previous_friends)
+            )
+            for core_friend, list_friends in new_friends.items():
+                list_friends = list_friends['items']
+                current_friends.update(list_friends)
+                friends.add_edges_from([(core_friend, i) for i in list_friends])
+            previous_friends = current_friends
+            current_friends = set()
+
+        batch_size = 1000
+        friends_nodes = list(friends)
+        for batch in [friends_nodes[i:i+batch_size] for i in range(0, len(friends_nodes), batch_size)]:
+            data = self.api.users.get(user_ids=batch, fields=self.major_fields)
+            nx.set_node_attributes(friends, {k:v for k, v in zip(batch, data)})
+       
+        return friends
+        

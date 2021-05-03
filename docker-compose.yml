@@ -1,0 +1,45 @@
+version: '2.2'
+services:
+
+  app:
+    labels:
+      com.datadoghq.ad.logs: '[{"source":"docker", "service":"yasna_app"}]'
+    build:
+      context: app
+      dockerfile: Dockerfile
+    image: "yasna_app:latest"
+    container_name: yasna_app
+    ports:
+      - "${FRONTEND_HOST:-127.0.0.1:80}:80"
+    networks:
+      - app-network
+    environment:
+      NODE_OPTIONS: "--max-old-space-size=1024"
+
+  frontend:
+    labels:
+      com.datadoghq.ad.logs: '[{"source":"docker", "service":"yasna_frontend"}]'
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+      args:
+        build_env: "${FRONTEND_BUILD_ENV}"
+    image: "yasna_frontend:latest"
+    container_name: yasna_frontend
+    ports:
+      - "${FRONTEND_HOST:-127.0.0.1:80}:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d/:ro
+    networks:
+      - app-network
+    environment:
+      NODE_OPTIONS: "--max-old-space-size=1024"
+    depends_on:
+      - app
+  # todo: add postgres
+networks:
+  app-network:
+    driver: bridge
+volumes:
+  dbdata:
+    driver: local
